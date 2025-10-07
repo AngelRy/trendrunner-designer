@@ -1,0 +1,38 @@
+# Ignore environment secrets
+.env
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.py[cod]
+*.pyo
+
+# Ignore virtual environments
+venv/
+.rawrunai/
+.env/
+*.egg-info/
+.env
+*.env
+
+# Logs
+*.log
+
+# Local CSV or SQLite data
+*.csv
+*.sqlite
+
+# Ignore VS Code settings
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Ignore Streamlit cache
+.streamlit/
+
+# Ignore data exports or generated images
+*.png
+*.jpg
+data/output/
