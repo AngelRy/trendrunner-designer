@@ -16,7 +16,7 @@ Built with Python, Streamlit, and LLMs (OpenAI / local Ollama).
 
 ## Demo
 
-![TrendRunner Demo](aux_files/T-shirt_20251007.png)
+![TrendRunner Demo](aux_files/tanothr.png)
   <!-- optional screenshot -->
 ---
 
@@ -32,57 +32,54 @@ cd trendrunner_designer
 
 
 
-## Installation
-
-1. Clone the repository:
-
-```bash
-git clone git@github.com:AngelRy/trendrunner-designer.git
-cd trendrunner_designer
-
- 
 2. Create a Python virtual environment and activate it:
-
+```bash
 python -m venv venv
 source venv/bin/activate   # Linux / macOS
-# venv\Scripts\activate    # Windows (PowerShell)
-
+venv\Scripts\activate      # Windows
+```
 
 3. Install dependencies:
-
+```bash
 pip install -r requirements.txt
-
-
-
-
-    Create and populate your .env file:
-
+```
+4. Create and populate your .env file:
+```bash
 cp .env.example .env
+```
+
+```
+
+
+
+    Fill in your keys in .env:
+
+        OPENAI_API_KEY → required if using OpenAI API fallback
+
+        HF_TOKEN → optional, if you plan to use Hugging Face models
+```
+
+
+
+
+
 # Then edit .env and add your keys, e.g. OPENAI_API_KEY=sk_xxx
 
 .env.example
 
 Create a .env file from .env.example and put your keys there. Example .env.example contents:
 
-# Copy to .env and fill in
-OPENAI_API_KEY=YOUR_OPENAI_KEY_HERE
-HF_TOKEN=YOUR_HUGGINGFACE_TOKEN_HERE
 
-    Important: Do not commit your .env file. It contains secrets and is listed in .gitignore.
 
-Usage
+## Usage
 
 Run the Streamlit app:
-
+```bash
 streamlit run app.py
+```
 
-    Use the sidebar to adjust visual parameters (number of icons, font size, background color).
 
-    Click Generate Design to produce a new slogan + mockup image.
-
-    Use the Download button (if present) to save the PNG.
-
-Slogan Generation Options (LLM)
+## Slogan Generation Options (LLM)
 
 The app supports multiple slogan backends; configure one or more in your .env:
 
@@ -113,7 +110,7 @@ Notes for First-Time Users
 
     If you experience slow LLM responses locally, consider using a remote model (OpenAI or Hugging Face inference) for faster performance.
 
-Troubleshooting
+## Troubleshooting
 
     Missing API key: ensure .env contains OPENAI_API_KEY and that you ran source venv/bin/activate before starting Streamlit.
 
@@ -126,3 +123,5 @@ python scripts/generate_icons.py
 License
 
 This project is released under the MIT License. See the LICENSE file for details.
+
+
