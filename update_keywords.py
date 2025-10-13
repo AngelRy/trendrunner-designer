@@ -1,51 +1,57 @@
-# update_keywords.py
-import os
 import pandas as pd
 import random
+import time
+from pathlib import Path
+from pytrends.request import TrendReq
 
-CSV_PATH = os.path.join("data", "sample_keywords.csv")
+DATA_PATH = Path("data/sample_keywords.csv")
 
-# Base keywords relevant to running & recovery
+# Define your base keywords (can be extended dynamically)
 BASE_KEYWORDS = [
-    "running", "marathon", "trail", "recovery", "ultra",
-    "HIIT", "5K", "10K", "crossfit", "yoga", "fitness", "stretching"
+    "running", "marathon", "trail running", "ultra running",
+    "HIIT", "crossfit", "yoga", "recovery run", "stretching",
+    "fitness", "interval training", "5K run", "10K run"
 ]
+
+def fetch_trends(keywords):
+    pytrend = TrendReq(hl="en-US", tz=360)
+    records = []
+
+    for kw in keywords:
+        try:
+            print(f"🌐 Fetching trend data for '{kw}'...")
+            pytrend.build_payload([kw], timeframe="today 12-m")
+            df = pytrend.interest_over_time()
+
+            if not df.empty:
+                popularity = int(df[kw].iloc[-1])
+                print(f"✅ {kw}: {popularity}")
+                records.append((kw, popularity))
+            else:
+                print(f"⚠️ No data for {kw}, using fallback value.")
+                records.append((kw, random.randint(40, 90)))
+
+            time.sleep(random.uniform(1.5, 3.5))  # avoid rate limits
+
+        except Exception as e:
+            print(f"❌ Error fetching {kw}: {e}")
+            records.append((kw, random.randint(40, 90)))
+
+    return pd.DataFrame(records, columns=["keyword", "popularity_last_month"])
 
 def update_keywords():
     try:
-        from pytrends.request import TrendReq
-        print("🌐 Fetching Google Trends data...")
-        pytrends = TrendReq(hl='en-US', tz=360)
-
-        # Build payload
-        pytrends.build_payload(BASE_KEYWORDS, timeframe='today 1-m', geo='US')
-        data = pytrends.interest_over_time()
-        
-        if data.empty:
-            raise Exception("No trend data received from Google.")
-
-        # Extract last month popularity
+        df = fetch_trends(BASE_KEYWORDS)
+        df.to_csv(DATA_PATH, index=False)
+        print(f"✅ Trend data saved to {DATA_PATH}")
+    except Exception as e:
+        print(f"💡 Using static fallback due to error: {e}")
         df = pd.DataFrame({
             "keyword": BASE_KEYWORDS,
-            "popularity_last_month": [int(data[kw].iloc[-1]) for kw in BASE_KEYWORDS]
+            "popularity_last_month": [random.randint(40, 90) for _ in BASE_KEYWORDS]
         })
+        df.to_csv(DATA_PATH, index=False)
+        print(f"✅ Fallback keywords saved to {DATA_PATH}")
 
-        # Add slight random variation for demo appearance
-        df["popularity_last_month"] = df["popularity_last_month"].apply(lambda x: max(1, x + random.randint(-10, 10)))
-        df.to_csv(CSV_PATH, index=False)
-        print(f"✅ Keywords updated from Google Trends at {CSV_PATH}")
-
-    except Exception as e:
-        print(f"⚠️ Could not fetch Google Trends: {e}")
-        print("💡 Using dynamic fallback keywords")
-
-        # Randomized popularity for fallback
-        data = []
-        for kw in BASE_KEYWORDS:
-            popularity = random.randint(30, 100)
-            data.append({"keyword": kw, "popularity_last_month": popularity})
-
-        df = pd.DataFrame(data)
-        os.makedirs(os.path.dirname(CSV_PATH), exist_ok=True)
-        df.to_csv(CSV_PATH, index=False)
-        print(f"✅ Fallback keywords saved at {CSV_PATH}")
+if __name__ == "__main__":
+    update_keywords()

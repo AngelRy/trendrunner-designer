@@ -7,50 +7,67 @@ from image_gen import generate_design_image
 from llm_utils import generate_slogan
 
 # -----------------------------
-# Update keywords (online/fallback)
-update_keywords()
+# Load or update trending keywords
+try:
+    update_keywords()
+except Exception as e:
+    st.warning(f"⚠️ Could not update keywords online. Using local fallback. ({e})")
+
 KEYWORDS_CSV = Path("data/sample_keywords.csv")
+if not KEYWORDS_CSV.exists():
+    st.error("No keyword file found. Please ensure data/sample_keywords.csv exists.")
+    st.stop()
+
 df_keywords = pd.read_csv(KEYWORDS_CSV)
+if df_keywords.empty:
+    st.error("The keyword file is empty. Please populate it or rerun update_keywords().")
+    st.stop()
 
 # -----------------------------
 # Streamlit UI
 st.set_page_config(page_title="TrendRunner Designer", layout="centered")
 st.title("🏃 TrendRunner Designer")
-st.write("Generate trendy running T-shirt designs with AI-generated slogans!")
+st.markdown("Generate **trendy running T-shirt designs** with creative AI slogans!")
 
-# Sidebar for settings
-st.sidebar.header("Design Settings")
-
-# Number of icons per design
-num_icons = st.sidebar.slider("Number of icons per design", min_value=1, max_value=5, value=2)
-
-# Font size range
-font_size = st.sidebar.slider("Font size", min_value=20, max_value=50, value=30)
-
-# Background color
+# Sidebar settings
+st.sidebar.header("🎨 Design Settings")
+num_icons = st.sidebar.slider("Number of icons per design", 1, 5, 2)
+font_size = st.sidebar.slider("Font size", 20, 50, 30)
 bg_color = st.sidebar.color_picker("Background color", "#ffffff")
 
 # Generate button
 if st.sidebar.button("Generate Design"):
+    st.subheader("✨ Your AI-Generated Design")
 
-    # Choose a random keyword
+    # Random keyword selection
     keyword_row = df_keywords.sample(n=1).iloc[0]
-    keyword = keyword_row['keyword']
-    popularity = keyword_row['popularity_last_month']
-    st.write(f"**Keyword:** {keyword} (popularity: {popularity})")
+    keyword = keyword_row["keyword"]
+    popularity = keyword_row["popularity_last_month"]
+    st.markdown(f"**Keyword:** `{keyword}` (popularity: {popularity})")
 
-    # Generate slogans using LLM
-    slogans = generate_slogan(keyword, n=3)
-    slogan = random.choice(slogans)
-    st.write(f"**Slogan:** {slogan}")
+    with st.spinner("💡 Generating slogans using AI..."):
+        try:
+            slogans = generate_slogan(keyword, count=3)
+            slogan = random.choice(slogans).strip()
+            if not slogan:
+                raise ValueError("Empty slogan received")
+            st.markdown(f"**Slogan:** {slogan}")
+        except Exception as e:
+            st.warning(f"⚠️ Could not generate slogan with LLM. Using fallback text. ({e})")
+            slogan = f"Run free with {keyword.title()} spirit!"
 
-    # Generate T-shirt design
-    design_img = generate_design_image(
-        slogan,
-        num_icons=num_icons,
-        font_size=font_size,
-        bg_color=bg_color
-    )
+    with st.spinner("🎨 Creating design..."):
+        try:
+            design_img = generate_design_image(
+                slogan,
+                num_icons=num_icons,
+                font_size=font_size,
+                bg_color=bg_color
+            )
+            st.image(design_img, caption="Generated T-shirt Design", width="stretch")
+        except Exception as e:
+            st.error(f"❌ Failed to generate design image. ({e})")
 
-    # Display design
-    st.image(design_img, caption="Generated T-shirt Design", width="stretch")
+# -----------------------------
+st.markdown("---")
+st.caption("Built with ❤️ using Streamlit, AI models, and creative coding.")

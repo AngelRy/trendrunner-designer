@@ -36,3 +36,6 @@ Thumbs.db
 *.png
 *.jpg
 data/output/
+
+!aux_files/T-shirt_20251007.png
+
